@@ -21,39 +21,44 @@ Create new bundle for Your REST API:
 
 Include new bundle:
   
-    # app/config/routing.yml
-    acme_hello:
-        prefix: /api/v1/
-        resource: @AcmeRestBundle/Resources/config/routing.yml
-        type: rest
+```
+# app/config/routing.yml
+acme_hello:
+    prefix: /api/v1/
+    resource: @AcmeRestBundle/Resources/config/routing.yml
+    type: rest
+```
 
 Create doctrine entitiy:
 
-    php app/console generate:doctrine:entity \
-       --non-interaction --entity=AcmeRestBundle:Post \
-       --fields="id:integer name:string(100)" --format=yml
+```
+php app/console generate:doctrine:entity \
+    --non-interaction --entity=AcmeRestBundle:Post \
+    --fields="id:integer name:string(100)" --format=yml
+```
 
-Create controller:
+Create rest controller:
 
-    # src/Acme/DemoBundle/Controller/CatController.php
-    <?php
+```php
+# src/Acme/DemoBundle/Controller/CatController.php
+<?php
+namespace Eyja\RestDemoBundle\Controller;
 
-    namespace Eyja\RestDemoBundle\Controller;
+use Eyja\RestBundle\Controller\RestRepositoryController;
 
-    use Eyja\RestBundle\Controller\RestRepositoryController;
-
-    class CatController extends RestRepositoryController {
-        public function getRepository() {
-            return $this->getDoctrine()->getRepository('AcmeRestBundle:Cat');
-        }
-
-        public function getResourceName() {
-            return 'catgory';
-        }
+class CatController extends RestRepositoryController {
+    public function getRepository() {
+        return $this->getDoctrine()->getRepository('AcmeRestBundle:Cat');
     }
 
-Register controller as service:
+    public function getResourceName() {
+        return 'catgory';
+    }
+}
+```
 
+Register controller as service:
+<!--
 ```php
 # src/Acme/DemoBundle/DependencyInjection/AcmeDemoExtension.php
 <?php
@@ -79,12 +84,12 @@ class EyjaRestDemoExtension extends Extension {
 	}
 }
 ```
-
+-->
 ```yml
 # src/Acme/DemoBundle/Resources/config/services.yml
 services:
   acme_demo.controller.cat:
-    class: Eyja\RestDemoBundle\Controller\RestProductController
+    class: Acme\DemoBundle\Controller\CatController
     tags: [ { name: rest.controller } ]
 ```
 

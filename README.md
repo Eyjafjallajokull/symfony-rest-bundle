@@ -2,7 +2,7 @@
 
 **Work in progress**
 
-TLDR; Create REST API operating on doctrine entities with minimum efford.
+TLDR; Create REST API operating on doctrine entities with minimum effort.
 
 ## Setup
 

@@ -1,16 +1,16 @@
-= Symfony REST Framework
+# Symfony REST Framework
 
 **Work in progress**
 
 // introduction
 
-== Setup
+## Setup
 
 To get started, download this bundle:
 
     composer require eyja/rest-bundle dev-master
 
-== Minimal example
+## Minimal example
 
 // REVIEW and TEST this workflow
 
@@ -54,7 +54,7 @@ Create controller:
 
 Register controller as service:
 
-```
+```php
 # src/Acme/DemoBundle/DependencyInjection/AcmeDemoExtension.php
 <?php
 
@@ -78,8 +78,9 @@ class EyjaRestDemoExtension extends Extension {
 		$loader->load('services.yml');
 	}
 }
+```
 
-
+```yml
 # src/Acme/DemoBundle/Resources/config/services.yml
 services:
   acme_demo.controller.cat:
@@ -89,7 +90,7 @@ services:
 
 And last step - validation:
 
-```
+```yml
 # src/Acme/DemoBundle/Resources/config/validation.yml
 Acme\DemoBundle\Entity\Cat:
     properties:
@@ -97,4 +98,19 @@ Acme\DemoBundle\Entity\Cat:
             - NotBlank: {groups: [update]}
         name:
             - NotBlank: {groups: [update, create]}
+```
+
+Viola! You can use your new api:
+
+```bash
+curl -XPOST http://localhost/app_dev.php/cat -HContent-Type:\ application/json -d'{"name":"Lucifer"}'
+{"id":1,"name":"Lucifer"}
+curl -XGET http://localhost/app_dev.php/cat/1
+{"id":1,"name":"Lucifer"}
+curl -XPUT http://localhost/app_dev.php/cat/1 -HContent-Type:\ application/json -d'{"name":"Lucifer -.-"}'
+{"id":1,"name":"Lucifer -.-"}
+curl -XGET http://localhost/app_dev.php/cat
+{"results":[{"id":1,"name":"Lucifer"}],"_metadata":{"limit":20,"offset":0,"total":1}}
+curl -XDELETE http://localhost/app_dev.php/cat/1
+# Empty response, http status code 204
 ```

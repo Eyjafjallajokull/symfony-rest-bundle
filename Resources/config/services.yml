@@ -1,0 +1,33 @@
+services:
+    eyja_rest.listener.view:
+        class: Eyja\RestBundle\EventListener\ViewListener
+        calls:
+            - [setSerializer, [@serializer]]
+        tags:
+            - { name: kernel.event_listener, event: kernel.view, method: onKernelView }
+
+    eyja_rest.listener.controller:
+        class: Eyja\RestBundle\EventListener\ControllerListener
+        calls:
+            - [setSerializer, [@serializer]]
+        tags:
+            - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
+
+    eyja_rest.listener.exception:
+        class: Eyja\RestBundle\EventListener\ExceptionListener
+        arguments: [ %kernel.debug% ]
+        calls:
+            - [setSerializer, [@serializer]]
+        tags:
+            - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }
+
+    eyja_rest.routing.loader:
+        class: Eyja\RestBundle\Routing\RestLoader
+        arguments: [ @service_container ]
+        calls:
+            - [setResolver, [ @routing.resolver ]]
+        tags:
+            - { name: routing.loader }
+
+    eyja_rest.routing.collector:
+        class: Doctrine\Common\Collections\ArrayCollection

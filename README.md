@@ -2,17 +2,17 @@
 
 **Work in progress**
 
-// introduction
+TLDR; Create REST API operating on doctrine entities with minimum efford.
 
 ## Setup
 
-To get started, download this bundle:
+To get started, install this bundle in your Symfony project:
 
     composer require eyja/rest-bundle dev-master
 
 ## Minimal example
 
-// REVIEW and TEST this workflow
+// @todo REVIEW and TEST this workflow
 
 Create new bundle for Your REST API:
 
@@ -119,3 +119,8 @@ curl -XGET http://localhost/app_dev.php/cat
 curl -XDELETE http://localhost/app_dev.php/cat/1
 # Empty response, http status code 204
 ```
+
+## Larger example
+
+To see more complex example see [example bundle](https://github.com/Eyjafjallajokull/symfony-rest-demo-bundle), 
+featuring custom routes and advanced serialization.

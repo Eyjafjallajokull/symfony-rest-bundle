@@ -1,7 +1,7 @@
 {
     "name": "eyja/rest-bundle",
     "type": "library",
-    "description": "Framework for creating REST APIs",
+    "description": "Framework for creating REST APIs using Doctrine entities",
     "keywords": ["rest", "api"],
     "require": {
         "php": ">=5.3.2",

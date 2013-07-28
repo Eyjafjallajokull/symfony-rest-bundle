@@ -25,15 +25,15 @@ class RestLoader extends Loader {
 		foreach ($restControllers as $controllerServiceName) {
 			/** @var $controller RestRepositoryController */
 			$controller = $this->container->get($controllerServiceName);
-			$controllerName = $this->getControllerName($controller);
 			$resource = $controller->getResourceName();
 			$actions = $controller->getAllowedActions();
-
 			foreach ($actions as $actionName) {
 				$action = RestRoutes::getRoute($actionName);
 				$defaults = array(
-					'_controller' => $controllerName.$actionName, 'is_rest_request' => true,
-					'rest_action' => $actionName, 'serialization_groups' => $action['serialization_groups']
+					'_controller' => $controllerServiceName.':'.$actionName.'Action',
+                    'is_rest_request' => true,
+					'rest_action' => $actionName,
+                    'serialization_groups' => $action['serialization_groups']
 				);
 				$pattern = str_replace('{resource}', $resource, $action['pattern']);
 				$route = new Route($pattern, $defaults);
@@ -43,17 +43,5 @@ class RestLoader extends Loader {
 		}
 
 		return $routes;
-	}
-
-	public function getControllerName($controller) {
-		$controllerClass = get_class($controller);
-		$bundleName =
-			($p1 = strpos($ns = $controllerClass, '\\')) === false ? $ns :
-				substr($ns, 0, ($p2 = strpos($ns, '\\', $p1 + 1)) === false ? strlen($ns) : $p2);
-		$bundleName = str_replace('\\', '', $bundleName);
-		$controllerName = substr($controllerClass, strrpos($controllerClass, '\\') + 1);
-		$controllerName = str_replace('Controller', '', $controllerName);
-		$routeController = $bundleName.':'.$controllerName.':';
-		return $routeController;
 	}
 }

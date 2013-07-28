@@ -6,7 +6,7 @@ use Doctrine\Common\Persistence\ObjectManager;
 use Doctrine\ORM\EntityRepository;
 use Eyja\RestBundle\Exception\BadRequestException;
 
-class RepositiryWrapper {
+class RepositoryWrapper {
 	protected $manager;
 	protected $repository;
 	/** @var \Doctrine\ORM\Mapping\ClassMetadata  */

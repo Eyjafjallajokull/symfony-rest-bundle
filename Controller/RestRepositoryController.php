@@ -7,7 +7,7 @@ use Doctrine\ORM\QueryBuilder;
 use Eyja\RestBundle\Exception\BadRequestException;
 use Eyja\RestBundle\Exception\NotFoundException;
 use Doctrine\ORM\EntityRepository;
-use Eyja\RestBundle\Repository\RepositiryWrapper;
+use Eyja\RestBundle\Repository\RepositoryWrapper;
 use Eyja\RestBundle\Routing\RestRoutes;
 use Eyja\RestBundle\Utils\RestRepositoryQueryParams;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -16,29 +16,77 @@ use Symfony\Component\HttpFoundation\Response;
 /**
  * Class RestRepositoryController
  */
-abstract class RestRepositoryController extends RestController {
+class RestRepositoryController extends RestController {
 	/** @var string */
 	protected $resourceName;
 	/** @var array */
-	private $allowedActions = array('getSingle', 'getCollection', 'create', 'update', 'delete');
-	/** @var RepositiryWrapper */
+	protected $allowedActions = array('getSingle', 'getCollection', 'create', 'update', 'delete');
+    /** @var EntityRepository */
+    protected $repository;
+    /** @var string */
+    protected $repositoryName;
+	/** @var RepositoryWrapper */
 	protected $repositoryWrapper;
 	/** @var RestRepositoryQueryParams */
 	protected $query;
 
-	/**
-	 * Return repository
-	 *
-	 * @return EntityRepository
-	 */
-	public abstract function getRepository();
+    /**
+     * Set repository name
+     *
+     * @param $repositoryName
+     */
+    public function setRepositoryName($repositoryName) {
+        $this->repositoryName = $repositoryName;
+    }
 
-	/**
-	 * Return resource name
-	 *
-	 * @return string
-	 */
-	public abstract function getResourceName();
+    /**
+     * Return repository name
+     *
+     * @return string
+     */
+    public function getRepositoryName() {
+
+        return $this->repositoryName;
+    }
+
+    /**
+     * Return repository
+     *
+     * @return EntityRepository
+     */
+    public function getRepository() {
+        if ($this->repository === null) {
+            $this->repository = $this->getDoctrine()->getRepository($this->getRepositoryName());
+        }
+        return $this->repository;
+    }
+
+    /**
+     * Return resource name
+     *
+     * @return string
+     */
+    public function getResourceName() {
+        return $this->resourceName;
+    }
+
+    /**
+     * Set resource Name
+     *
+     * @param string $resourceName
+     */
+    public function setResourceName($resourceName) {
+        $this->resourceName = $resourceName;
+    }
+
+    /**
+     * Set allowed actions
+     *
+     * @param array $allowedActions
+     */
+    public function setAllowedActions(array $allowedActions) {
+        $this->allowedActions = $allowedActions;
+    }
 
 	/**
 	 * Return allowed actions
@@ -64,7 +112,7 @@ abstract class RestRepositoryController extends RestController {
 	 */
 	protected function getRepositoryWrapper() {
 		if ($this->repositoryWrapper === null) {
-			$this->repositoryWrapper = new RepositiryWrapper($this->getDoctrine()->getManager(), $this->getRepository());
+			$this->repositoryWrapper = new RepositoryWrapper($this->getDoctrine()->getManager(), $this->getRepository());
 		}
 		return $this->repositoryWrapper;
 	}

@@ -38,13 +38,27 @@ class RestRoutes {
 		),
 	);
 
-	public static function getRoute($name) {
+    /**
+     * Return route meta information
+     *
+     * @param string $name
+     * @return array
+     * @throws \InvalidArgumentException
+     */
+    public static function getRoute($name) {
 		if (!array_key_exists($name, self::$routes)) {
 			throw new \InvalidArgumentException('Invalid route name '.$name);
 		}
 		return self::$routes[$name];
 	}
 
+    /**
+     * Return route name for given action
+     *
+     * @param string $resource
+     * @param string $action
+     * @return string
+     */
     public static function getRouteName($resource, $action) {
         return 'rest_'.$resource.'_'.$action;
     }

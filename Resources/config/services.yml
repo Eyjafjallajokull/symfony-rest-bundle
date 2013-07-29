@@ -17,9 +17,17 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }
 
+
     eyja_rest.serializer:
         class: Eyja\RestBundle\Serializer\Serializer
-        arguments: [@serializer]
+        arguments: [@jms_serializer]
+
+    eyja_rest.serializer.query_deserialization_visitor:
+        class: Eyja\RestBundle\Serializer\QueryDeserializationVisitor
+        arguments: [@jms_serializer.naming_strategy, @jms_serializer.object_constructor]
+        tags:
+            - { name: jms_serializer.deserialization_visitor, format: query }
+
 
     eyja_rest.routing.loader:
         class: Eyja\RestBundle\Routing\RestLoader

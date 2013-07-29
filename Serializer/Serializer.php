@@ -20,7 +20,8 @@ class Serializer {
     /** @var array */
     private $supportedDeserializationTypes = array(
         'application/json' => 'json',
-        'application/xml' => 'xml'
+        'application/xml' => 'xml',
+        'application/x-www-form-urlencoded' => 'query'
     );
 
     /**
@@ -74,6 +75,7 @@ class Serializer {
         $serializationContext = SerializationContext::create();
         $serializationContext->enableMaxDepthChecks();
         $serializationContext->setGroups($groups);
+
         return $this->serializer->serialize($content, $type, $serializationContext);
     }
 

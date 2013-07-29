@@ -3,12 +3,12 @@
 namespace Eyja\RestBundle\EventListener;
 
 use Eyja\RestBundle\Exception\BadRequestException;
-use JMS\Serializer\Serializer;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Validator\ConstraintViolationList;
+use Eyja\RestBundle\Serializer\Serializer;
 
 /**
  * Class ResponseListener
@@ -20,17 +20,15 @@ class ExceptionListener {
 	/** @var Serializer */
 	private $serializer;
 
-	/**
-	 * konstruktor ustawia debug
-	 *
-	 * @param bool $debug
-	 */
-	public function __construct($debug) {
+    /**
+     * konstruktor ustawia debug
+     *
+     * @param Serializer $serializer
+     * @param bool $debug
+     */
+	public function __construct(Serializer $serializer, $debug) {
 		$this->debug = (bool)$debug;
-	}
-
-	public function setSerializer(Serializer $serializer) {
-		$this->serializer = $serializer;
+        $this->serializer = $serializer;
 	}
 
 	/**
@@ -50,26 +48,15 @@ class ExceptionListener {
 		if ($exception instanceof HttpException) {
 			$statusCode = $exception->getStatusCode();
 		}
-		$response = array(
+		$data = array(
 			'status' => $statusCode, 'message' => $exception->getMessage()
 		);
-		$this->addDebugInfo($response, $exception);
-		$this->addAdditionalInfo($response, $exception);
+		$this->addDebugInfo($data, $exception);
+		$this->addAdditionalInfo($data, $exception);
 
-		$response = new Response($this->serialize($response), $statusCode);
-		$response->headers->set('Content-Type', 'application/json');
-		$event->setResponse($response);
-	}
-
-	/**
-	 * Serializuje dane
-	 *
-	 * @param mixed $data
-	 *
-	 * @return string
-	 */
-	private function serialize($data) {
-		return $this->serializer->serialize($data, 'json');
+		$response = new Response('', $statusCode);
+        $this->serializer->serializeResponse($event->getRequest(), $response, $data, 'application/json');
+        $event->setResponse($response);
 	}
 
 	/**

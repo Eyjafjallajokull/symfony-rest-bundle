@@ -3,17 +3,17 @@
 namespace Eyja\RestBundle\EventListener;
 
 use JMS\Serializer\SerializationContext;
-use JMS\Serializer\Serializer;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
+use Eyja\RestBundle\Serializer\Serializer;
 
 class ViewListener {
 	/** @var Serializer */
 	private $serializer;
 
-	public function setSerializer(Serializer $serializer) {
+	public function __construct(Serializer $serializer) {
 		$this->serializer = $serializer;
 	}
 
@@ -27,23 +27,8 @@ class ViewListener {
             } else {
                 $response = new Response('', 200);
             }
-            $this->serializeResponse($request, $response, $result);
+            $this->serializer->serializeResponse($request, $response, $result);
 			$event->setResponse($response);
 		}
 	}
-
-    protected function serializeResponse(Request $request, Response $response, $data) {
-        $groups = $request->attributes->get('serialization_groups', array());
-        $content = $this->serializeContent($data, $groups, 'json');
-        $response->setContent($content);
-        $response->headers->set('content-type', 'application/json');
-    }
-
-    protected function serializeContent($content, $groups, $type) {
-        $serializationContext = SerializationContext::create();
-        $serializationContext->enableMaxDepthChecks();
-        $serializationContext->setGroups($groups);
-        return $this->serializer->serialize($content, $type, $serializationContext);
-    }
-
 }

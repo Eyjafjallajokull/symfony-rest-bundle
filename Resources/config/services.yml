@@ -1,29 +1,29 @@
 services:
     eyja_rest.listener.view:
         class: Eyja\RestBundle\EventListener\ViewListener
-        calls:
-            - [setSerializer, [@serializer]]
+        arguments: [@eyja_rest.serializer]
         tags:
             - { name: kernel.event_listener, event: kernel.view, method: onKernelView }
 
     eyja_rest.listener.controller:
         class: Eyja\RestBundle\EventListener\ControllerListener
-        calls:
-            - [setSerializer, [@serializer]]
+        arguments: [@eyja_rest.serializer]
         tags:
             - { name: kernel.event_listener, event: kernel.controller, method: onKernelController }
 
     eyja_rest.listener.exception:
         class: Eyja\RestBundle\EventListener\ExceptionListener
-        arguments: [ %kernel.debug% ]
-        calls:
-            - [setSerializer, [@serializer]]
+        arguments: [@eyja_rest.serializer, %kernel.debug%]
         tags:
             - { name: kernel.event_listener, event: kernel.exception, method: onKernelException, priority: 200 }
 
+    eyja_rest.serializer:
+        class: Eyja\RestBundle\Serializer\Serializer
+        arguments: [@serializer]
+
     eyja_rest.routing.loader:
         class: Eyja\RestBundle\Routing\RestLoader
-        arguments: [ @service_container ]
+        arguments: [@service_container]
         calls:
             - [setResolver, [ @routing.resolver ]]
         tags:

@@ -4,15 +4,15 @@ namespace Eyja\RestBundle\EventListener;
 
 use Eyja\RestBundle\Controller\RestRepositoryController;
 use Eyja\RestBundle\Routing\RestRoutes;
-use JMS\Serializer\Serializer;
 use Symfony\Component\HttpKernel\HttpKernelInterface;
 use Symfony\Component\HttpKernel\Event\FilterControllerEvent;
+use Eyja\RestBundle\Serializer\Serializer;
 
 class ControllerListener {
 	/** @var Serializer */
 	private $serializer;
 
-	public function setSerializer(Serializer $serializer) {
+	public function __construct(Serializer $serializer) {
 		$this->serializer = $serializer;
 	}
 
@@ -25,12 +25,10 @@ class ControllerListener {
 		$request = $event->getRequest();
 
 		if ($controller instanceof RestRepositoryController &&
-			($request->isMethod('post') || $request->isMethod('put')) &&
-			$request->headers->get('content-type') === 'application/json'
+			($request->isMethod('post') || $request->isMethod('put'))
 		) {
-			$content = $request->getContent();
 			$objectClass = $controller->getRepository()->getClassName();
-			$object = $this->serializer->deserialize($content, $objectClass, 'json');
+			$object = $this->serializer->deserialize($request, $objectClass);
 			$request->attributes->set('entity', $object);
 		}
 	}

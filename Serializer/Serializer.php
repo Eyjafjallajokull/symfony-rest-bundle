@@ -24,6 +24,8 @@ class Serializer {
         'application/x-www-form-urlencoded' => 'query'
     );
 
+    const DEFAULT_CONTENT_TYPE = 'application/json';
+
     /**
      * Constructor
      *
@@ -46,6 +48,7 @@ class Serializer {
      */
     public function serializeResponse(Request $request, Response $response, $data, $defaultContentType = null) {
         $acceptableTypes = $request->getAcceptableContentTypes();
+        $acceptableTypes = str_replace('*/*', self::DEFAULT_CONTENT_TYPE, $acceptableTypes);
         $acceptableSupportedTypes = array_intersect($acceptableTypes, array_keys($this->supportedSerializationTypes));
         if (count($acceptableSupportedTypes)>0) {
             $contentType = array_values($acceptableSupportedTypes);

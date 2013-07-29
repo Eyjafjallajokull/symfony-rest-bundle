@@ -39,37 +39,7 @@ php app/console generate:doctrine:entity \
 php app/console doctrine:schema:update --force
 ```
 
-Create rest controller:
-
-```php
-# src/Acme/RestBundle/Controller/CatController.php
-<?php
-namespace Acme\RestBundle\Controller;
-
-use Eyja\RestBundle\Controller\RestRepositoryController;
-
-class CatController extends RestRepositoryController {
-    public function getRepository() {
-        return $this->getDoctrine()->getRepository('AcmeRestBundle:Cat');
-    }
-
-    public function getResourceName() {
-        return 'cat';
-    }
-}
-```
-
-Register controller as service:
-
-```yml
-# src/Acme/RestBundle/Resources/config/services.yml
-services:
-  acme_rest.controller.cat:
-    class: Acme\RestBundle\Controller\CatController
-    tags: [ { name: rest.controller } ]
-```
-
-And last step - validation:
+Define validation for entity:
 
 ```yml
 # src/Acme/RestBundle/Resources/config/validation.yml
@@ -79,6 +49,20 @@ Acme\RestBundle\Entity\Cat:
             - NotBlank: {groups: [update]}
         name:
             - NotBlank: {groups: [update, create]}
+```
+
+Create simplest controller ever, no class required just service:
+
+```yml
+# src/Acme/RestBundle/Resources/config/services.yml
+services:
+  acme_rest.controller.cat:
+    class: Eyja\RestBundle\Controller\RestRepositoryController
+    tags: [ { name: rest.controller } ]
+    calls:
+      - [setContainer, [@service_container]]
+      - [setRepositoryName, [AcmeRestBundle:Cat]]
+      - [setResourceName, [cat]]
 ```
 
 Viola! You can use your new api:

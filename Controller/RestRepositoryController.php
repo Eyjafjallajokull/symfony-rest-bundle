@@ -7,6 +7,7 @@ use Doctrine\ORM\QueryBuilder;
 use Eyja\RestBundle\Exception\BadRequestException;
 use Eyja\RestBundle\Exception\NotFoundException;
 use Doctrine\ORM\EntityRepository;
+use Eyja\RestBundle\Message\Collection;
 use Eyja\RestBundle\Repository\RepositoryWrapper;
 use Eyja\RestBundle\Routing\RestRoutes;
 use Eyja\RestBundle\Utils\RestRepositoryQueryParams;
@@ -168,27 +169,25 @@ class RestRepositoryController extends RestController {
 		$query = $baseQueryBuilder->getQuery();
 		$total = (int)$query->getSingleScalarResult();
 
-		$response = array(
-			'results' => $results,
-			'_metadata' => array(
-				'total' => $total,
-				'limit' => $limit,
-				'offset' => $offset,
-			)
-		);
+        // create response message
+        $response = new Collection();
+        $response->setResults(new \ArrayIterator($results));
+        $metadata = $response->getMetadata();
+        $metadata->set('total', $total);
+        $metadata->set('limit', $limit);
+        $metadata->set('offset', $offset);
 
         // create next/prev links
         if ($limit+$offset < $total) {
             $url = $this->getRestUrl('getCollection').'?'.
                 http_build_query(array('limit'=>$limit, 'offset'=>$offset+$limit));
-            $response['_metadata']['next'] = $url;
+            $metadata->set('next', $url);
         }
         if ($offset > 0) {
             $url = $this->getRestUrl('getCollection').'?'.
                 http_build_query(array('limit'=>$limit, 'offset'=>$offset-$limit ?: 0));
-            $response['_metadata']['previous'] = $url;
+            $metadata->set('previous', $url);
         }
-
 		return $response;
 	}
 

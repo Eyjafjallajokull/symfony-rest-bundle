@@ -1,0 +1,14 @@
+Eyja\RestBundle\Message\Collection:
+    xml_root_name: response
+    properties:
+        results:
+            type: array
+            groups: [collection]
+        metadata:
+            type: array
+            groups: [collection]
+            xml_key_value_pairs: true
+            access_type: public_method
+            accessor:
+                getter: getMetadataArray
+                setter: setMetadata

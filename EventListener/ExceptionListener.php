@@ -21,7 +21,7 @@ class ExceptionListener {
 	private $serializer;
 
     /**
-     * konstruktor ustawia debug
+     * Constructor
      *
      * @param Serializer $serializer
      * @param bool $debug
@@ -32,7 +32,7 @@ class ExceptionListener {
 	}
 
 	/**
-	 * Zamiana wyjątku na ładnego jsona
+	 * Formats pretty exception
 	 *
 	 * @param \Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent $event
 	 */
@@ -91,5 +91,6 @@ class ExceptionListener {
 				return $response;
 			}
 		}
+        return $response;
 	}
 }

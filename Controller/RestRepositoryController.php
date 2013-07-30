@@ -2,12 +2,14 @@
 
 namespace Eyja\RestBundle\Controller;
 
-use Doctrine\ORM\NoResultException;
 use Doctrine\ORM\QueryBuilder;
 use Eyja\RestBundle\Exception\BadRequestException;
 use Eyja\RestBundle\Exception\NotFoundException;
 use Doctrine\ORM\EntityRepository;
 use Eyja\RestBundle\Message\Collection;
+use Eyja\RestBundle\Repository\CreateOperation;
+use Eyja\RestBundle\Repository\GetCollectionOperation;
+use Eyja\RestBundle\Repository\GetSingleOperation;
 use Eyja\RestBundle\Repository\RepositoryWrapper;
 use Eyja\RestBundle\Routing\RestRoutes;
 use Eyja\RestBundle\Utils\RestRepositoryQueryParams;
@@ -18,13 +20,13 @@ use Symfony\Component\HttpFoundation\Response;
  * Class RestRepositoryController
  */
 class RestRepositoryController extends RestController {
-	/** @var string */
+	/** @var string This name will be used in routes for this resource eg /product/1 */
 	protected $resourceName;
-	/** @var array */
+	/** @var array This array is used by route generator, it will create only routes for allowed actions*/
 	protected $allowedActions = array('getSingle', 'getCollection', 'create', 'update', 'delete');
     /** @var EntityRepository */
     protected $repository;
-    /** @var string */
+    /** @var string Symfony name of Doctrine entity*/
     protected $repositoryName;
 	/** @var RepositoryWrapper */
 	protected $repositoryWrapper;
@@ -114,9 +116,19 @@ class RestRepositoryController extends RestController {
 	protected function getRepositoryWrapper() {
 		if ($this->repositoryWrapper === null) {
 			$this->repositoryWrapper = new RepositoryWrapper($this->getDoctrine()->getManager(), $this->getRepository());
+            $this->setQueryWhere($this->repositoryWrapper->getBaseQuery(false));
+
 		}
 		return $this->repositoryWrapper;
 	}
+
+    /**
+     * Add additional where's to query
+     *
+     * @param \Doctrine\ORM\QueryBuilder $queryBuilder
+     */
+    protected function setQueryWhere(QueryBuilder $queryBuilder) {
+    }
 
 	/**
 	 * Return single entity
@@ -127,16 +139,9 @@ class RestRepositoryController extends RestController {
 	 * @throws \Eyja\RestBundle\Exception\NotFoundException
 	 */
 	public function getSingleAction($id) {
-		$idField = $this->getRepositoryWrapper()->getIdField();
-
-		$queryBuilder = $this->createQuery();
-		$queryBuilder->andWhere('c.'.$idField .' = '.$id);
-		$query = $queryBuilder->getQuery();
-		try {
-			$entity = $query->getSingleResult();
-		} catch (NoResultException $e) {
-			throw new NotFoundException('Entity not found');
-		}
+        /** @var GetSingleOperation $operation */
+        $operation = $this->getRepositoryWrapper()->getOperation('getSingle');
+        $entity = $operation->setId($id)->execute();
 		return $entity;
 	}
 
@@ -144,7 +149,7 @@ class RestRepositoryController extends RestController {
      * Get collection of entities
      *
      * @throws \Eyja\RestBundle\Exception\BadRequestException
-     * @return array
+     * @return \Eyja\RestBundle\Message\Collection
      */
 	public function getCollectionAction() {
 		$limit = $this->query->getLimit();
@@ -156,18 +161,10 @@ class RestRepositoryController extends RestController {
             throw new BadRequestException('Invalid value for offset parameter');
         }
 
-        $baseQueryBuilder = $this->createQuery();
-        // fetch results
-		$query = $baseQueryBuilder->getQuery();
-		$query->useResultCache(true);
-		$query->setFirstResult($offset);
-		$query->setMaxResults($limit);
-		$results = $query->getResult();
-
-        // fetch total rows
-		$baseQueryBuilder->select('count(c)');
-		$query = $baseQueryBuilder->getQuery();
-		$total = (int)$query->getSingleScalarResult();
+        /** @var GetCollectionOperation $operation */
+        $operation = $this->getRepositoryWrapper()->getOperation('getCollection')->setLimit($limit)->setOffset($offset);
+        $results = $operation->execute();
+        $total = $operation->getCollectionTotal();
 
         // create response message
         $response = new Collection();
@@ -178,39 +175,16 @@ class RestRepositoryController extends RestController {
         $metadata->set('offset', $offset);
 
         // create next/prev links
+        // @todo remember to include other query params (filter, sort)
         if ($limit+$offset < $total) {
-            $url = $this->getRestUrl('getCollection').'?'.
-                http_build_query(array('limit'=>$limit, 'offset'=>$offset+$limit));
+            $url = $this->getRestUrl('getCollection', array(), array('limit'=>$limit, 'offset' => $offset+$limit));
             $metadata->set('next', $url);
         }
         if ($offset > 0) {
-            $url = $this->getRestUrl('getCollection').'?'.
-                http_build_query(array('limit'=>$limit, 'offset'=>$offset-$limit ?: 0));
+            $url = $this->getRestUrl('getCollection', array(), array('limit'=>$limit, 'offset' => $offset-$limit ?: 0));
             $metadata->set('previous', $url);
         }
 		return $response;
-	}
-
-	/**
-	 * Add additional where's to query
-	 *
-	 * @param QueryBuilder $queryBuilder
-	 *
-	 * @return QueryBuilder
-	 */
-	protected function setQueryWhere(QueryBuilder $queryBuilder) {
-		return $queryBuilder;
-	}
-
-	/**
-	 * Create base query
-	 *
-	 * @return QueryBuilder
-	 */
-	protected function createQuery() {
-		$queryBuilder = $this->getRepositoryWrapper()->createQuery();
-		$this->setQueryWhere($queryBuilder);
-		return $queryBuilder;
 	}
 
 	/**
@@ -220,11 +194,11 @@ class RestRepositoryController extends RestController {
 	 */
 	public function createAction() {
 		$entity = $this->getRequest()->attributes->get('entity');
-
 		$this->validateEntity($entity, 'create');
-		$this->getRepositoryWrapper()->assignAssociatedEntities($entity);
 
-		$this->getRepositoryWrapper()->save($entity);
+        /** @var CreateOperation $operation */
+        $operation = $this->getRepositoryWrapper()->getOperation('create')->setEntity($entity);
+        $entity = $operation->execute();
 
 //        $id = $this->getRepositoryWrapper()->getIdValue($entity);
 //        $url = $this->getRestUrl('getSingle', array('id' => $id));
@@ -232,9 +206,20 @@ class RestRepositoryController extends RestController {
 		return $entity;
 	}
 
-    protected function getRestUrl($action, $parameters = array()) {
+    /**
+     * Return url with domain and protocol
+     *
+     * @param $action
+     * @param array $parameters
+     * @param array $query
+     * @return string
+     */
+    protected function getRestUrl($action, $parameters = array(), array $query = null) {
         $url = $this->generateUrl(RestRoutes::getRouteName($this->getResourceName(), $action), $parameters);
         $url = $this->getRequest()->getScheme() . '://' . $this->getRequest()->getHttpHost() . $url;
+        if (!empty($query)) {
+            $url .= '?'.http_build_query($query);
+        }
         return $url;
     }
 
@@ -250,62 +235,53 @@ class RestRepositoryController extends RestController {
 		$oldEntity = $this->getSingleAction($id);
 		$newEntity = $this->getRequest()->attributes->get('entity');
 
-		$metadata = $this->getRepositoryWrapper()->getMetadata();
-
 		// check ids
-		$idValue = $this->getRepositoryWrapper()->getIdValue($newEntity);
-		if ($idValue !== null && $idValue !== $id) {
-			throw new BadRequestException('ID value in entity should be unset or identical to ID in url.');
-		}
+//		$idValue = $this->getRepositoryWrapper()->getIdValue($newEntity);
+//		if ($idValue !== null && $idValue !== $id) {
+//			throw new BadRequestException('ID value in entity should be unset or identical to ID in url.');
+//		}
 
-		// merge entities
-		foreach ($metadata->getFieldNames() as $fieldName) {
-			$newValue = $metadata->getFieldValue($newEntity, $fieldName);
-			if ($newValue !== null) {
-				$metadata->setFieldValue($oldEntity, $fieldName, $newValue);
-			}
-		}
+        $operation = $this->getRepositoryWrapper()->getOperation('update');
+        $operation->mergeEntities($oldEntity, $newEntity);
+        $operation->setEntity($oldEntity);
 
-		$this->getRepositoryWrapper()->assignAssociatedEntities($oldEntity);
+        $this->validateEntity($oldEntity, 'update');
 
-		$this->validateEntity($oldEntity, 'update');
-		$this->getRepositoryWrapper()->save();
-		return $oldEntity;
-	}
-
-	/**
-	 * Validates entity
-	 *
-	 * @param mixed $entity
-	 * @param null|array $groups
-	 *
-	 * @throws \Eyja\RestBundle\Exception\BadRequestException
-	 */
-	protected function validateEntity($entity, $groups = null) {
-		if (empty($entity)) {
-			$missingHeader = false;
-			if ($this->getRequest()->headers->get('content-type')) {
-				$missingHeader = true;
-			}
-			throw new BadRequestException('Empty entity. '.($missingHeader ? 'Content-type header is missing' : ''));
-		}
-		$violations = $this->get('validator')->validate($entity, $groups);
-		if ($violations->count() != 0) {
-			throw new BadRequestException('Entity validation error', $violations);
-		}
+        $entity = $operation->execute();
+		return $entity;
 	}
 
 	/**
 	 * Deletes entity
 	 *
 	 * @param string $id
-	 *
-	 * @return mixed
-	 */
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
 	public function deleteAction($id) {
 		$entity = $this->getSingleAction($id);
-		$this->getRepositoryWrapper()->remove($entity);
+        $this->getRepositoryWrapper()->getOperation('delete')->setEntity($entity)->execute();
         return new Response('', 204);
 	}
 
+    /**
+     * Validates entity
+     *
+     * @param mixed $entity
+     * @param null|array $groups
+     *
+     * @throws \Eyja\RestBundle\Exception\BadRequestException
+     */
+    protected function validateEntity($entity, $groups = null) {
+        if (empty($entity)) {
+            $missingHeader = false;
+            if ($this->getRequest()->headers->get('content-type')) {
+                $missingHeader = true;
+            }
+            throw new BadRequestException('Empty entity. '.($missingHeader ? 'Content-type header is missing' : ''));
+        }
+        $violations = $this->get('validator')->validate($entity, $groups);
+        if ($violations->count() != 0) {
+            throw new BadRequestException('Entity validation error', $violations);
+        }
+    }
 }

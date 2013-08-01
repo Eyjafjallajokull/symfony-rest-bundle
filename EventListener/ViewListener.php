@@ -18,16 +18,16 @@ class ViewListener {
 	}
 
 	public function onKernelView(GetResponseForControllerResultEvent $event) {
-        $request = $event->getRequest();
-        $attributes = $request->attributes;
+		$request = $event->getRequest();
+		$attributes = $request->attributes;
 		if ($attributes->get('is_rest_request', false) === true) {
 			$result = $event->getControllerResult();
-            if ($result instanceof Response) {
-                $response = $result;
-            } else {
-                $response = new Response('', 200);
-            }
-            $this->serializer->serializeResponse($request, $response, $result);
+			if ($result instanceof Response) {
+				$response = $result;
+			} else {
+				$response = new Response('', 200);
+			}
+			$this->serializer->serializeResponse($request, $response, $result);
 			$event->setResponse($response);
 		}
 	}

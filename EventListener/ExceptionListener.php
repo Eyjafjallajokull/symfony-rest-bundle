@@ -20,15 +20,15 @@ class ExceptionListener {
 	/** @var Serializer */
 	private $serializer;
 
-    /**
-     * Constructor
-     *
-     * @param Serializer $serializer
-     * @param bool $debug
-     */
+	/**
+	 * Constructor
+	 *
+	 * @param Serializer $serializer
+	 * @param bool $debug
+	 */
 	public function __construct(Serializer $serializer, $debug) {
 		$this->debug = (bool)$debug;
-        $this->serializer = $serializer;
+		$this->serializer = $serializer;
 	}
 
 	/**
@@ -49,14 +49,15 @@ class ExceptionListener {
 			$statusCode = $exception->getStatusCode();
 		}
 		$data = array(
-			'status' => $statusCode, 'message' => $exception->getMessage()
+			'status' => $statusCode,
+			'message' => $exception->getMessage()
 		);
 		$this->addDebugInfo($data, $exception);
 		$this->addAdditionalInfo($data, $exception);
 
 		$response = new Response('', $statusCode);
-        $this->serializer->serializeResponse($event->getRequest(), $response, $data, 'application/json');
-        $event->setResponse($response);
+		$this->serializer->serializeResponse($event->getRequest(), $response, $data, 'application/json');
+		$event->setResponse($response);
 	}
 
 	/**
@@ -91,6 +92,6 @@ class ExceptionListener {
 				return $response;
 			}
 		}
-        return $response;
+		return $response;
 	}
 }

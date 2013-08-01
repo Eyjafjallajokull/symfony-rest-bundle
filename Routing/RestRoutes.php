@@ -15,22 +15,26 @@ class RestRoutes {
 			'pattern' => '/{resource}/{id}',
 			'methods' => array('GET'),
 			'serialization_groups' => array('single')
-		), 'update' => array(
+		),
+		'update' => array(
 			'name' => 'update',
 			'pattern' => '/{resource}/{id}',
 			'methods' => array('PUT'),
 			'serialization_groups' => array('single')
-		), 'delete' => array(
+		),
+		'delete' => array(
 			'name' => 'delete',
 			'pattern' => '/{resource}/{id}',
 			'methods' => array('DELETE'),
 			'serialization_groups' => array('single')
-		), 'getCollection' => array(
+		),
+		'getCollection' => array(
 			'name' => 'getCollection',
 			'pattern' => '/{resource}',
 			'methods' => array('GET'),
 			'serialization_groups' => array('collection')
-		), 'create' => array(
+		),
+		'create' => array(
 			'name' => 'create',
 			'pattern' => '/{resource}',
 			'methods' => array('POST'),
@@ -38,28 +42,28 @@ class RestRoutes {
 		),
 	);
 
-    /**
-     * Return route meta information
-     *
-     * @param string $name
-     * @return array
-     * @throws \InvalidArgumentException
-     */
-    public static function getRoute($name) {
+	/**
+	 * Return route meta information
+	 *
+	 * @param string $name
+	 * @return array
+	 * @throws \InvalidArgumentException
+	 */
+	public static function getRoute($name) {
 		if (!array_key_exists($name, self::$routes)) {
-			throw new \InvalidArgumentException('Invalid route name '.$name);
+			throw new \InvalidArgumentException('Invalid route name ' . $name);
 		}
 		return self::$routes[$name];
 	}
 
-    /**
-     * Return route name for given action
-     *
-     * @param string $resource
-     * @param string $action
-     * @return string
-     */
-    public static function getRouteName($resource, $action) {
-        return 'rest_'.$resource.'_'.$action;
-    }
+	/**
+	 * Return route name for given action
+	 *
+	 * @param string $resource
+	 * @param string $action
+	 * @return string
+	 */
+	public static function getRouteName($resource, $action) {
+		return 'rest_' . $resource . '_' . $action;
+	}
 }

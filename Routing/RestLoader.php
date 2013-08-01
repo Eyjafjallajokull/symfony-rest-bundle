@@ -30,10 +30,10 @@ class RestLoader extends Loader {
 			foreach ($actions as $actionName) {
 				$action = RestRoutes::getRoute($actionName);
 				$defaults = array(
-					'_controller' => $controllerServiceName.':'.$actionName.'Action',
-                    'is_rest_request' => true,
+					'_controller' => $controllerServiceName . ':' . $actionName . 'Action',
+					'is_rest_request' => true,
 					'rest_action' => $actionName,
-                    'serialization_groups' => $action['serialization_groups']
+					'serialization_groups' => $action['serialization_groups']
 				);
 				$pattern = str_replace('{resource}', $resource, $action['pattern']);
 				$route = new Route($pattern, $defaults);

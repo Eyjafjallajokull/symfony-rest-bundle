@@ -8,8 +8,8 @@ use JMS\Serializer\Metadata\ClassMetadata;
 use JMS\Serializer\Metadata\PropertyMetadata;
 
 class QueryDeserializationVisitor extends GenericDeserializationVisitor {
-    protected function decode($str) {
-        parse_str($str, $decoded);
-        return $decoded;
-    }
+	protected function decode($str) {
+		parse_str($str, $decoded);
+		return $decoded;
+	}
 }

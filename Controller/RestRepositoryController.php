@@ -14,6 +14,7 @@ use Eyja\RestBundle\Repository\GetSingleOperation;
 use Eyja\RestBundle\Repository\RepositoryWrapper;
 use Eyja\RestBundle\Routing\RestRoutes;
 use Eyja\RestBundle\Utils\RestRepositoryQueryParams;
+use JMS\Parser\SyntaxErrorException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -164,7 +165,11 @@ class RestRepositoryController extends RestController {
 		$fp = new FilterParser();
 		$filters = $this->query->getFilters();
 		if (!empty($filters)) {
-			$filters = $fp->parse($filters);
+			try {
+				$filters = $fp->parse($filters);
+			} catch (SyntaxErrorException $e) {
+				throw new BadRequestException('Invalid filter definition. '.$e->getMessage(), null, $e);
+			}
 		}
 
 		/** @var GetCollectionOperation $operation */

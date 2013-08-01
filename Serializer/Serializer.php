@@ -2,6 +2,7 @@
 
 namespace Eyja\RestBundle\Serializer;
 
+use Eyja\RestBundle\Message\ExceptionMessage;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer as JMSSerializer;
 use Symfony\Component\HttpFoundation\Request;
@@ -60,8 +61,12 @@ class Serializer {
 		} else {
 			throw new \Exception('Unsupported or empty value in Accept header.');
 		}
-		$groups = $request->attributes->get('serialization_groups', array());
-		$content = $this->serializeContent($data, $groups, $type);
+		if (!$data instanceof ExceptionMessage) {
+			$groups = $request->attributes->get('serialization_groups', array());
+		} else {
+			$groups = null;
+		}
+		$content = $this->serializeContent($data, $type, $groups);
 		$response->setContent($content);
 		$response->headers->set('content-type', $contentType);
 	}
@@ -70,15 +75,16 @@ class Serializer {
 	 * Serialized content body
 	 *
 	 * @param string $content
-	 * @param array $groups
 	 * @param string $type
+	 * @param array $groups
 	 * @return string
 	 */
-	public function serializeContent($content, array $groups, $type) {
+	public function serializeContent($content, $type, array $groups = null) {
 		$serializationContext = SerializationContext::create();
 		$serializationContext->enableMaxDepthChecks();
-		$serializationContext->setGroups($groups);
-
+		if (!empty($groups)) {
+			$serializationContext->setGroups($groups);
+		}
 		return $this->serializer->serialize($content, $type, $serializationContext);
 	}
 

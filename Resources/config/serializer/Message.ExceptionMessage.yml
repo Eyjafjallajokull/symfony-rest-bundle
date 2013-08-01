@@ -1,0 +1,2 @@
+Eyja\RestBundle\Message\ExceptionMessage:
+    xml_root_name: exception

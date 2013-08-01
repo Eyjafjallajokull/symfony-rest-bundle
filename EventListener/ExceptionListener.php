@@ -3,6 +3,7 @@
 namespace Eyja\RestBundle\EventListener;
 
 use Eyja\RestBundle\Exception\BadRequestException;
+use Eyja\RestBundle\Message\ExceptionMessage;
 use Symfony\Component\HttpKernel\Event\GetResponseForExceptionEvent;
 use Symfony\Component\HttpKernel\HttpKernel;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,36 +49,36 @@ class ExceptionListener {
 		if ($exception instanceof HttpException) {
 			$statusCode = $exception->getStatusCode();
 		}
-		$data = array(
-			'status' => $statusCode,
-			'message' => $exception->getMessage()
-		);
-		$this->addDebugInfo($data, $exception);
-		$this->addAdditionalInfo($data, $exception);
+
+		$exceptionMessage = new ExceptionMessage();
+		$exceptionMessage->setStatus($statusCode);
+		$exceptionMessage->setMessage($statusCode);
+		$this->addDebugInfo($exceptionMessage, $exception);
+		$this->addAdditionalInfo($exceptionMessage, $exception);
 
 		$response = new Response('', $statusCode);
-		$this->serializer->serializeResponse($event->getRequest(), $response, $data, 'application/json');
+		$this->serializer->serializeResponse($event->getRequest(), $response, $exceptionMessage, 'application/json');
 		$event->setResponse($response);
 	}
 
 	/**
-	 * @param $response
+	 * @param ExceptionMessage $exceptionMessage
 	 * @param $exception
 	 */
-	public function addDebugInfo(&$response, $exception) {
+	public function addDebugInfo(ExceptionMessage $exceptionMessage, $exception) {
 		if ($this->debug) {
-			$response['exception'] = get_class($exception);
-			$response['trace'] = explode("\n", $exception->getTraceAsString());
+			$exceptionMessage->setException(get_class($exception));
+			$exceptionMessage->setTrace(explode("\n", $exception->getTraceAsString()));
 		}
 	}
 
 	/**
+	 * @param ExceptionMessage $exceptionMessage
 	 * @param $exception
-	 * @param $response
 	 *
 	 * @return mixed
 	 */
-	public function addAdditionalInfo(&$response, $exception) {
+	public function addAdditionalInfo(ExceptionMessage $exceptionMessage, $exception) {
 		if ($exception instanceof BadRequestException) {
 			$exceptionInfo = $exception->getInfo();
 			if ($exceptionInfo instanceof ConstraintViolationList) {
@@ -85,13 +86,11 @@ class ExceptionListener {
 				foreach ($exceptionInfo as $violation) {
 					$info[$violation->getPropertyPath()] = $violation->getMessage();
 				}
-				$response['info'] = $info;
-				return $response;
+				$exceptionMessage->setInfo($info);
 			} else if (!empty($exceptionInfo)) {
-				$response['info'] = $exceptionInfo;
-				return $response;
+				$exceptionMessage->setInfo($exceptionInfo);
 			}
 		}
-		return $response;
+		return $exceptionMessage;
 	}
 }

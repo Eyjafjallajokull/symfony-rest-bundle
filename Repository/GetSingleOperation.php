@@ -26,7 +26,7 @@ class GetSingleOperation extends AbstractOperation {
 		try {
 			$entity = $query->getSingleResult();
 		} catch (NoResultException $e) {
-			throw new NotFoundException('Entity not found');
+			throw new NotFoundException('Entity not found', $e);
 		}
 		return $entity;
 	}

@@ -24,6 +24,6 @@ class RestRepositoryQueryParams {
 	}
 
 	public function getFilters() {
-		return $this->query->get('filter');
+		return $this->query->get('filter', '');
 	}
 }

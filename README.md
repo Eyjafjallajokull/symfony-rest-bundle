@@ -93,7 +93,7 @@ curl -XDELETE http://localhost/app_dev.php/cat/1
 
 ## Larger example
 
-To see more complex example see [example bundle](https://github.com/Eyjafjallajokull/symfony-rest-demo-bundle), 
+To see more complex example see [demo bundle](https://github.com/Eyjafjallajokull/symfony-rest-demo-bundle), 
 featuring custom routes and advanced serialization.
 
 ## Generated API

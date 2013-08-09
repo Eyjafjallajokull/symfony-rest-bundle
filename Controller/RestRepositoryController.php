@@ -190,14 +190,17 @@ class RestRepositoryController extends RestController {
 		$metadata->set('offset', $offset);
 
 		// create next/prev links
-		// @todo remember to include other query params (filter, sort)
+		$queryParams = $this->getRequest()->query;
 		if ($limit + $offset < $total) {
-			$url = $this->getRestUrl('getCollection', array(), array('limit' => $limit, 'offset' => $offset + $limit));
+			$newQuery = clone $queryParams;
+			$newQuery->add(array('limit' => $limit, 'offset' => $offset + $limit));
+			$url = $this->getRestUrl('getCollection', array(), $newQuery->all());
 			$metadata->set('next', $url);
 		}
 		if ($offset > 0) {
-			$url = $this->getRestUrl('getCollection', array(), array('limit' => $limit,
-				'offset' => $offset - $limit ? : 0));
+			$newQuery = clone $queryParams;
+			$newQuery->add(array('limit' => $limit, 'offset' => $offset - $limit ? : 0));
+			$url = $this->getRestUrl('getCollection', array(), $newQuery->all());
 			$metadata->set('previous', $url);
 		}
 		return $response;

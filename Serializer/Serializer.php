@@ -5,6 +5,7 @@ namespace Eyja\RestBundle\Serializer;
 use Eyja\RestBundle\Message\ExceptionMessage;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer as JMSSerializer;
+use Symfony\Component\HttpFoundation\AcceptHeader;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -50,7 +51,11 @@ class Serializer {
 	public function serializeResponse(Request $request, Response $response, $data, $defaultContentType = null) {
 		$acceptableTypes = $request->getAcceptableContentTypes();
 		$acceptableTypes = str_replace('*/*', self::DEFAULT_CONTENT_TYPE, $acceptableTypes);
+		if ($formatQuery = $request->query->get('format')) {
+			$acceptableTypes = array($formatQuery);
+		}
 		$acceptableSupportedTypes = array_intersect($acceptableTypes, array_keys($this->supportedSerializationTypes));
+
 		if (count($acceptableSupportedTypes) > 0) {
 			$contentType = array_values($acceptableSupportedTypes);
 			$contentType = $contentType[0];

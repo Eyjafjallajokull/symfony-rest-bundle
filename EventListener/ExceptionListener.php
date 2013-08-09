@@ -52,7 +52,7 @@ class ExceptionListener {
 
 		$exceptionMessage = new ExceptionMessage();
 		$exceptionMessage->setStatus($statusCode);
-		$exceptionMessage->setMessage($statusCode);
+		$exceptionMessage->setMessage($exception->getMessage());
 		$this->addDebugInfo($exceptionMessage, $exception);
 		$this->addAdditionalInfo($exceptionMessage, $exception);
 

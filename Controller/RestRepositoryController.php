@@ -158,7 +158,7 @@ class RestRepositoryController extends RestController {
 			throw new BadRequestException('Invalid value for limit parameter');
 		}
 		$offset = $this->query->getOffset();
-		if ($limit < 0) {
+		if ($offset < 0) {
 			throw new BadRequestException('Invalid value for offset parameter');
 		}
 

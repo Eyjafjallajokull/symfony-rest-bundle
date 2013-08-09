@@ -2,6 +2,7 @@
 
 namespace Eyja\RestBundle\Serializer;
 
+use Eyja\RestBundle\Exception\BadRequestException;
 use Eyja\RestBundle\Message\ExceptionMessage;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\Serializer as JMSSerializer;
@@ -64,7 +65,7 @@ class Serializer {
 			$contentType = $defaultContentType;
 			$type = $this->supportedSerializationTypes[$contentType];
 		} else {
-			throw new \Exception('Unsupported or empty value in Accept header.');
+			throw new BadRequestException('Unsupported or empty value in Accept header.');
 		}
 		if (!$data instanceof ExceptionMessage) {
 			$groups = $request->attributes->get('serialization_groups', array());
@@ -109,7 +110,7 @@ class Serializer {
 			$type = $this->supportedDeserializationTypes[$contentType];
 			return $this->serializer->deserialize($request->getContent(), $objectClass, $type);
 		} else {
-			throw new \Exception('Unsupported or empty value in Content-Type header.');
+			throw new BadRequestException('Unsupported or empty value in Content-Type header.');
 		}
 	}
 

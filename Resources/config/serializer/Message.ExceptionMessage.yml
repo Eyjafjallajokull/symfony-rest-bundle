@@ -1,2 +1,6 @@
 Eyja\RestBundle\Message\ExceptionMessage:
     xml_root_name: exception
+    properties:
+        info:
+            type: array
+            xml_key_value_pairs: true

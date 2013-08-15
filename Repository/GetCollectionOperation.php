@@ -2,6 +2,7 @@
 
 namespace Eyja\RestBundle\Repository;
 use Doctrine\ORM\QueryBuilder;
+use Eyja\RestBundle\Exception\BadRequestException;
 
 /**
  * Returns collection of entities
@@ -86,6 +87,12 @@ class GetCollectionOperation extends AbstractOperation {
 			case 'ge':
 				$method = 'gte';
 				break;
+			case 'ne':
+				$method = 'neq';
+				break;
+		}
+		if (!in_array($method, array('lte','gte','neq','eq','lt','gt'))) {
+			throw new BadRequestException('Invalid comparison operator '.$method);
 		}
 		$criteria = $qb->expr()->$method('c.' . $filter[0], '?' . count($this->params));
 		$this->params[] = $filter[2];

@@ -34,6 +34,8 @@ class RestRepositoryController extends RestController {
 	protected $repositoryWrapper;
 	/** @var RestRepositoryQueryParams */
 	protected $query;
+	/** @var array|null */
+	protected $allowedFilterFields;
 
 	/**
 	 * Set repository name
@@ -102,6 +104,24 @@ class RestRepositoryController extends RestController {
 	}
 
 	/**
+	 * Set allowed filter fields
+	 *
+	 * @param array|null $allowedFilterFields
+	 */
+	public function setAllowedFilterFields($allowedFilterFields) {
+		$this->allowedFilterFields = $allowedFilterFields;
+	}
+
+	/**
+	 * Return allowed filter fields
+	 *
+	 * @return array
+	 */
+	public function getAllowedFilterFields() {
+		return $this->allowedFilterFields;
+	}
+
+	/**
 	 * Set container
 	 *
 	 * @param ContainerInterface $container
@@ -149,6 +169,8 @@ class RestRepositoryController extends RestController {
 	/**
 	 * Get collection of entities
 	 *
+	 * @todo this method requires refactoring
+	 *
 	 * @throws \Eyja\RestBundle\Exception\BadRequestException
 	 * @return \Eyja\RestBundle\Message\Collection
 	 */
@@ -166,7 +188,8 @@ class RestRepositoryController extends RestController {
 		$filters = $this->query->getFilters();
 		if (!empty($filters)) {
 			try {
-				$filters = $fp->parse($filters);
+				$filters = $fp->parse($filtersString);
+				var_dump($filters);
 			} catch (SyntaxErrorException $e) {
 				throw new BadRequestException('Invalid filter definition. '.$e->getMessage(), null, $e);
 			}

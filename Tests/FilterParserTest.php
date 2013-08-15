@@ -2,7 +2,7 @@
 
 namespace Eyja\RestBundle\Tests;
 
-use Eyja\RestBundle\OData\FilterParser;
+use Eyja\RestBundle\QueryParams\FilterParser;
 
 class FilterParserTest extends \PHPUnit_Framework_TestCase {
 	/** @var FilterParser */

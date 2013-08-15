@@ -15,6 +15,7 @@ class GetCollectionOperation extends AbstractOperation {
 	/** @var array */
 	protected $filters;
 	private $params = array();
+	private $criteria;
 
 	/**
 	 * @param int $limit
@@ -45,7 +46,10 @@ class GetCollectionOperation extends AbstractOperation {
 	public function execute() {
 		$baseQueryBuilder = $this->repositoryWrapper->getBaseQuery();
 
-		$this->addFilters($baseQueryBuilder);
+		$this->criteria = $this->compileFilters($baseQueryBuilder, $this->filters);
+		if ($this->criteria) {
+			$baseQueryBuilder->andWhere($this->criteria);
+		}
 
 		// fetch results
 		$query = $baseQueryBuilder->getQuery();
@@ -65,37 +69,55 @@ class GetCollectionOperation extends AbstractOperation {
 		return $total;
 	}
 
-	protected function addFilters(QueryBuilder $qb, array $filters = null) {
-		if ($filters == null) {
-			$filters = $this->filters;
+	public function getFilteredCollectionTotal() {
+		$baseQueryBuilder = $this->repositoryWrapper->getBaseQuery();
+		$baseQueryBuilder->select('count(c)');
+		if ($this->criteria) {
+			$baseQueryBuilder->andWhere($this->criteria);
 		}
-		if (empty($filters)) {
-			return;
-		}
-		foreach ($filters['and'] as &$filter) {
-			$filter = $this->filterToCriteria($qb, $filter);
-		}
-		$qb->andWhere(call_user_func_array(array($qb->expr(), 'andX'), $filters['and']));
+		$query = $baseQueryBuilder->getQuery();
+		$query->setParameters($this->params);
+		$total = (int)$query->getSingleScalarResult();
+		return $total;
 	}
 
-	protected function filterToCriteria(QueryBuilder $qb, array $filter) {
-		$method = $filter[1];
-		switch ($method) {
+	protected function compileFilters(QueryBuilder $qb, array $filterNode = null) {
+		if (empty($filterNode)) {
+			return null;
+		}
+		if ($filterNode['type'] == 'expression') {
+			$result = $this->compileCriteria($qb, $filterNode);
+		} else {
+			if ($filterNode['type'] == 'and') {
+				$result = $qb->expr()->andX();
+			} else {
+				$result = $qb->expr()->orX();
+			}
+			foreach ($filterNode['children'] as &$child) {
+				$result->add($this->compileFilters($qb, $child));
+			}
+		}
+		return $result;
+	}
+
+	protected function compileCriteria(QueryBuilder $qb, array $comparison) {
+		$operator = $comparison['operator'];
+		switch ($operator) {
 			case 'le':
-				$method = 'lte';
+				$operator = 'lte';
 				break;
 			case 'ge':
-				$method = 'gte';
+				$operator = 'gte';
 				break;
 			case 'ne':
-				$method = 'neq';
+				$operator = 'neq';
 				break;
 		}
-		if (!in_array($method, array('lte','gte','neq','eq','lt','gt'))) {
-			throw new BadRequestException('Invalid comparison operator '.$method);
+		if (!in_array($operator, array('lte','gte','neq','eq','lt','gt'))) {
+			throw new BadRequestException('Invalid comparison operator '.$operator);
 		}
-		$criteria = $qb->expr()->$method('c.' . $filter[0], '?' . count($this->params));
-		$this->params[] = $filter[2];
+		$criteria = $qb->expr()->$operator('c.' . $comparison['field'], '?' . count($this->params));
+		$this->params[] = $comparison['value'];
 		return $criteria;
 	}
 }

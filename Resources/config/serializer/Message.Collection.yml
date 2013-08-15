@@ -8,7 +8,3 @@ Eyja\RestBundle\Message\Collection:
             type: array
             groups: [collection]
             xml_key_value_pairs: true
-            access_type: public_method
-            accessor:
-                getter: getMetadataArray
-                setter: setMetadata

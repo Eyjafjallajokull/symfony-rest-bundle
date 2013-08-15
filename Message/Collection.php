@@ -2,28 +2,28 @@
 
 namespace Eyja\RestBundle\Message;
 
-use Symfony\Component\DependencyInjection\ParameterBag\ParameterBag;
+use PhpCollection\Map;
 
 class Collection {
 	/** @var \ArrayIterator */
 	protected $results;
-	/** @var ParameterBag meta information about returned collection */
+	/** @var Map meta information about returned collection */
 	protected $metadata;
 
 	function __construct() {
 		$this->results = new \ArrayIterator();
-		$this->metadata = new ParameterBag();
+		$this->metadata = new Map();
 	}
 
 	/**
-	 * @param \Symfony\Component\DependencyInjection\ParameterBag\ParameterBag $metadata
+	 * @param Map $metadata
 	 */
 	public function setMetadata($metadata) {
 		$this->metadata = $metadata;
 	}
 
 	/**
-	 * @return \Symfony\Component\DependencyInjection\ParameterBag\ParameterBag
+	 * @return Map
 	 */
 	public function getMetadata() {
 		return $this->metadata;
@@ -41,12 +41,5 @@ class Collection {
 	 */
 	public function getResults() {
 		return $this->results;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getMetadataArray() {
-		return $this->getMetadata()->all();
 	}
 }

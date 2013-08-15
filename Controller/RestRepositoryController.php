@@ -7,13 +7,13 @@ use Eyja\RestBundle\Exception\BadRequestException;
 use Eyja\RestBundle\Exception\NotFoundException;
 use Doctrine\ORM\EntityRepository;
 use Eyja\RestBundle\Message\Collection;
-use Eyja\RestBundle\OData\FilterParser;
+use Eyja\RestBundle\QueryParams\FilterParser;
 use Eyja\RestBundle\Repository\CreateOperation;
 use Eyja\RestBundle\Repository\GetCollectionOperation;
 use Eyja\RestBundle\Repository\GetSingleOperation;
 use Eyja\RestBundle\Repository\RepositoryWrapper;
 use Eyja\RestBundle\Routing\RestRoutes;
-use Eyja\RestBundle\Utils\RestRepositoryQueryParams;
+use Eyja\RestBundle\QueryParams\QueryParams;
 use JMS\Parser\SyntaxErrorException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +32,7 @@ class RestRepositoryController extends RestController {
 	protected $repositoryName;
 	/** @var RepositoryWrapper */
 	protected $repositoryWrapper;
-	/** @var RestRepositoryQueryParams */
+	/** @var QueryParams */
 	protected $query;
 	/** @var array|null */
 	protected $allowedFilterFields;
@@ -128,7 +128,7 @@ class RestRepositoryController extends RestController {
 	 */
 	public function setContainer(ContainerInterface $container = null) {
 		parent::setContainer($container);
-		$this->query = new RestRepositoryQueryParams($this->getRequest());
+		$this->query = new QueryParams($this->getRequest());
 	}
 
 	/**
@@ -169,8 +169,6 @@ class RestRepositoryController extends RestController {
 	/**
 	 * Get collection of entities
 	 *
-	 * @todo this method requires refactoring
-	 *
 	 * @throws \Eyja\RestBundle\Exception\BadRequestException
 	 * @return \Eyja\RestBundle\Message\Collection
 	 */
@@ -188,8 +186,7 @@ class RestRepositoryController extends RestController {
 		$filters = $this->query->getFilters();
 		if (!empty($filters)) {
 			try {
-				$filters = $fp->parse($filtersString);
-				var_dump($filters);
+				$filters = $fp->parse($filters);
 			} catch (SyntaxErrorException $e) {
 				throw new BadRequestException('Invalid filter definition. '.$e->getMessage(), null, $e);
 			}
@@ -211,6 +208,10 @@ class RestRepositoryController extends RestController {
 		$metadata->set('total', $total);
 		$metadata->set('limit', $limit);
 		$metadata->set('offset', $offset);
+		if (!empty($filters)) {
+			$total = $operation->getFilteredCollectionTotal();
+			$metadata->set('totalFiltered', $total);
+		}
 
 		// create next/prev links
 		$queryParams = $this->getRequest()->query;

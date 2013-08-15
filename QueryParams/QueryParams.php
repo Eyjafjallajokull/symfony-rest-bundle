@@ -1,13 +1,13 @@
 <?php
 
 
-namespace Eyja\RestBundle\Utils;
+namespace Eyja\RestBundle\QueryParams;
 
 
 use Symfony\Component\HttpFoundation\ParameterBag;
 use Symfony\Component\HttpFoundation\Request;
 
-class RestRepositoryQueryParams {
+class QueryParams {
 	/** @var ParameterBag */
 	protected $query;
 

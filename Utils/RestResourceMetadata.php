@@ -35,6 +35,12 @@ class RestResourceMetadata {
 
 	public function getFields($class) {
 		$serializerMd = $this->getSerializerMetadata($class);
-		var_dump($serializerMd);
+		$metadata = array();
+
+		foreach ($serializerMd as $fieldName => $data) {
+			$fieldName = $data->serializedName ?: $fieldName;
+			$metadata[$fieldName] = array('type' => $data->type['name']);
+		}
+		return $metadata;
 	}
 }

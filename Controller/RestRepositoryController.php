@@ -128,7 +128,7 @@ class RestRepositoryController extends RestController {
 	 */
 	public function setContainer(ContainerInterface $container = null) {
 		parent::setContainer($container);
-		$this->query = new QueryParams($this->getRequest());
+		$this->query = new QueryParams($this->getRequest()->query);
 	}
 
 	/**
@@ -136,8 +136,7 @@ class RestRepositoryController extends RestController {
 	 */
 	protected function getRepositoryWrapper() {
 		if ($this->repositoryWrapper === null) {
-			$this->repositoryWrapper = new RepositoryWrapper($this->getDoctrine()
-				->getManager(), $this->getRepository());
+			$this->repositoryWrapper = new RepositoryWrapper($this->getDoctrine()->getManager(), $this->getRepository());
 			$this->setQueryWhere($this->repositoryWrapper->getBaseQuery(false));
 		}
 		return $this->repositoryWrapper;
@@ -173,31 +172,26 @@ class RestRepositoryController extends RestController {
 	 * @return \Eyja\RestBundle\Message\Collection
 	 */
 	public function getCollectionAction() {
-		$limit = $this->query->getLimit();
-		if ($limit < 0 || $limit > 200) {
-			throw new BadRequestException('Invalid value for limit parameter');
-		}
+		$limit = $this->query->getLimit($this->container->getParameter('eyja_rest.default_limit'));
 		$offset = $this->query->getOffset();
-		if ($offset < 0) {
-			throw new BadRequestException('Invalid value for offset parameter');
-		}
-
-		$fp = new FilterParser();
 		$filters = $this->query->getFilters();
-		if (!empty($filters)) {
-			try {
-				$filters = $fp->parse($filters);
-			} catch (SyntaxErrorException $e) {
-				throw new BadRequestException('Invalid filter definition. '.$e->getMessage(), null, $e);
+
+		// validate filter fields
+		// @todo find better place for this validation
+		if ($filters) {
+			$allowedFilterFields = $this->getAllowedFilterFields();
+			if ($allowedFilterFields === null) {
+				$metadata = $this->get('eyja_rest.metadata');
+				$fieldsMetadata = $metadata->getFields($this->getRepository()->getClassName());
+				$allowedFilterFields = array_keys($fieldsMetadata);
 			}
+			$this->validateFilterFields($allowedFilterFields, $filters);
 		}
 
+		// create repository operation
 		/** @var GetCollectionOperation $operation */
 		$operation = $this->getRepositoryWrapper()->getOperation('getCollection')
-			->setLimit($limit)->setOffset($offset);
-		if (!empty($filters)) {
-			$operation->setFilters($filters);
-		}
+			->setLimit($limit)->setOffset($offset)->setFilters($filters);
 		$results = $operation->execute();
 		$total = $operation->getCollectionTotal();
 
@@ -228,6 +222,21 @@ class RestRepositoryController extends RestController {
 			$metadata->set('previous', $url);
 		}
 		return $response;
+	}
+
+	private function validateFilterFields($allowedFilterFields, $filterNode) {
+		if (!$filterNode) {
+			return;
+		}
+		if ($filterNode['type'] == 'expression') {
+			if (!in_array($filterNode['field'], $allowedFilterFields)) {
+				throw new BadRequestException('Field "'.$filterNode['field'].'" is not allowed in filters');
+			}
+		} else {
+			foreach ($filterNode['children'] as $child) {
+				$this->validateFilterFields($allowedFilterFields, $child);
+			}
+		}
 	}
 
 	/**

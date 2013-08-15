@@ -38,7 +38,7 @@ class GetCollectionOperation extends AbstractOperation {
 	/**
 	 * @param array $filters
 	 */
-	public function setFilters(array $filters) {
+	public function setFilters($filters) {
 		$this->filters = $filters;
 		return $this;
 	}

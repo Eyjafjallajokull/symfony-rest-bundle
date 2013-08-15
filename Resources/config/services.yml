@@ -1,3 +1,6 @@
+parameters:
+    eyja_rest.default_limit: 200
+
 services:
     eyja_rest.listener.view:
         class: Eyja\RestBundle\EventListener\ViewListener
@@ -39,3 +42,7 @@ services:
 
     eyja_rest.routing.collector:
         class: Doctrine\Common\Collections\ArrayCollection
+
+    eyja_rest.metadata:
+        class: Eyja\RestBundle\Utils\RestResourceMetadata
+        arguments: [@service_container]

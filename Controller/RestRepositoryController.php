@@ -118,7 +118,10 @@ class RestRepositoryController extends RestController {
 	}
 
 	/**
-	 * Return allowed filter fields
+	 * Return allowed filter fields.
+	 *
+	 * Field names must be in public form. For example if database field "parent_id" was configured in serializer with
+	 * serialized_name: "parentId", then "parentId" value should be used here.
 	 *
 	 * @return array
 	 */
@@ -182,15 +185,17 @@ class RestRepositoryController extends RestController {
 		$filters = $this->query->getFilters();
 
 		// validate filter fields
-		// @todo find better place for this validation
 		if ($filters) {
+			$metadata = $this->get('eyja_rest.metadata');
+			$fieldsMetadata = $metadata->getFields($this->getRepository()->getClassName());
 			$allowedFilterFields = $this->getAllowedFilterFields();
 			if ($allowedFilterFields === null) {
-				$metadata = $this->get('eyja_rest.metadata');
-				$fieldsMetadata = $metadata->getFields($this->getRepository()->getClassName());
-				$allowedFilterFields = array_keys($fieldsMetadata);
+				$allowedFilterFields = $fieldsMetadata;
+			} else {
+				$allowedFilterFields = array_flip($allowedFilterFields);
+				$allowedFilterFields = array_intersect_key($fieldsMetadata, $allowedFilterFields);
 			}
-			$this->validateFilterFields($allowedFilterFields, $filters);
+			$this->query->processFilterFields($allowedFilterFields, $filters);
 		}
 
 		// create repository operation
@@ -227,21 +232,6 @@ class RestRepositoryController extends RestController {
 			$metadata->set('previous', $url);
 		}
 		return $response;
-	}
-
-	private function validateFilterFields($allowedFilterFields, $filterNode) {
-		if (!$filterNode) {
-			return;
-		}
-		if ($filterNode['type'] == 'expression') {
-			if (!in_array($filterNode['field'], $allowedFilterFields)) {
-				throw new BadRequestException('Field "'.$filterNode['field'].'" is not allowed in filters');
-			}
-		} else {
-			foreach ($filterNode['children'] as $child) {
-				$this->validateFilterFields($allowedFilterFields, $child);
-			}
-		}
 	}
 
 	/**

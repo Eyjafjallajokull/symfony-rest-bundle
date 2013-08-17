@@ -38,8 +38,8 @@ class RestResourceMetadata {
 		$metadata = array();
 
 		foreach ($serializerMd as $fieldName => $data) {
-			$fieldName = $data->serializedName ?: $fieldName;
-			$metadata[$fieldName] = array('type' => $data->type['name']);
+			$publicName = $data->serializedName ?: $fieldName;
+			$metadata[$publicName] = array('type' => $data->type['name'], 'databaseName' => $fieldName);
 		}
 		return $metadata;
 	}

@@ -21,7 +21,7 @@ class FilterParser extends AbstractParser {
 		self::T_OPERATOR_JOIN => '(and|or)',
 		self::T_OPERATOR => '(eq|ne|gt|lt|ge|le)',
 		self::T_PROPERTY => '([a-z]+)',
-		self::T_VALUE => '(\d+(?:\.\d+)?|\'[^\']*\')',
+		self::T_VALUE => '(-?\d+(?:\.\d+)?|\'[^\']*\')',
 	);
 
 	public function __construct() {

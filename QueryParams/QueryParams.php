@@ -47,4 +47,20 @@ class QueryParams {
 		}
 		return $filters;
 	}
+
+	public function processFilterFields($allowedFilterFields, &$filterNode) {
+		if (!$filterNode) {
+			return;
+		}
+		if ($filterNode['type'] == 'expression') {
+			if (!array_key_exists($filterNode['field'], $allowedFilterFields)) {
+				throw new BadRequestException('Field "'.$filterNode['field'].'" is not allowed in filters');
+			}
+			$filterNode['field'] = $allowedFilterFields[$filterNode['field']]['databaseName'];
+		} else {
+			foreach ($filterNode['children'] as &$child) {
+				$this->processFilterFields($allowedFilterFields, $child);
+			}
+		}
+	}
 }

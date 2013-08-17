@@ -46,3 +46,10 @@ services:
     eyja_rest.metadata:
         class: Eyja\RestBundle\Utils\RestResourceMetadata
         arguments: [@service_container]
+
+
+    eyja_rest.abstract_controller:
+        abstract: true
+        class: Eyja\RestBundle\Controller\RestRepositoryController
+        calls:
+            - [setContainer, [@service_container]]

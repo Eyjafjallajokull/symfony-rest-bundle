@@ -37,6 +37,11 @@ class RestRepositoryController extends RestController {
 	/** @var array|null */
 	protected $allowedFilterFields;
 
+	public function __construct($repositoryName, $resourceName) {
+		$this->setRepositoryName($repositoryName);
+		$this->setResourceName($resourceName);
+	}
+
 	/**
 	 * Set repository name
 	 *
@@ -255,6 +260,7 @@ class RestRepositoryController extends RestController {
 //        $id = $this->getRepositoryWrapper()->getIdValue($entity);
 //        $url = $this->getRestUrl('getSingle', array('id' => $id));
 //        @todo add this header to response  array('Location' => $url)
+		// @todo status code should be 201
 		return $entity;
 	}
 

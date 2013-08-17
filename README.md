@@ -58,12 +58,9 @@ Create simplest controller ever, no class required just service:
 # src/Acme/RestBundle/Resources/config/services.yml
 services:
   acme_rest.controller.cat:
-    class: Eyja\RestBundle\Controller\RestRepositoryController
+    parent: eyja_rest.abstract_controller
+    arguments: [AcmeRestBundle:Cat, cat]
     tags: [ { name: rest.controller } ]
-    calls:
-      - [setContainer, [@service_container]]
-      - [setRepositoryName, [AcmeRestBundle:Cat]]
-      - [setResourceName, [cat]]
 ```
 
 Viola! You can use your new api:

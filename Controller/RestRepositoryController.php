@@ -136,7 +136,13 @@ class RestRepositoryController extends RestController {
 	 */
 	public function setContainer(ContainerInterface $container = null) {
 		parent::setContainer($container);
-		$this->query = new QueryParams($this->getRequest()->query);
+	}
+
+	private function getQuery() {
+		if (!$this->query) {
+			$this->query = new QueryParams($this->getRequest()->query);
+		}
+		return $this->query;
 	}
 
 	/**
@@ -180,9 +186,9 @@ class RestRepositoryController extends RestController {
 	 * @return \Eyja\RestBundle\Message\Collection
 	 */
 	public function getCollectionAction() {
-		$limit = $this->query->getLimit($this->container->getParameter('eyja_rest.default_limit'));
-		$offset = $this->query->getOffset();
-		$filters = $this->query->getFilters();
+		$limit = $this->getQuery()->getLimit($this->container->getParameter('eyja_rest.default_limit'));
+		$offset = $this->getQuery()->getOffset();
+		$filters = $this->getQuery()->getFilters();
 
 		// validate filter fields
 		if ($filters) {
@@ -195,7 +201,7 @@ class RestRepositoryController extends RestController {
 				$allowedFilterFields = array_flip($allowedFilterFields);
 				$allowedFilterFields = array_intersect_key($fieldsMetadata, $allowedFilterFields);
 			}
-			$this->query->processFilterFields($allowedFilterFields, $filters);
+			$this->getQuery()->processFilterFields($allowedFilterFields, $filters);
 		}
 
 		// create repository operation

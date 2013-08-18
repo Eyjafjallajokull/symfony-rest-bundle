@@ -33,13 +33,16 @@ class RestResourceMetadata {
 		return $md->propertyMetadata;
 	}
 
-	public function getFields($class) {
+	public function getFields($class, $returnOnlyAllowedFields = null) {
 		$serializerMd = $this->getSerializerMetadata($class);
 		$metadata = array();
 
 		foreach ($serializerMd as $fieldName => $data) {
 			$publicName = $data->serializedName ?: $fieldName;
-			$metadata[$publicName] = array('type' => $data->type['name'], 'databaseName' => $fieldName);
+			if (!$returnOnlyAllowedFields ||
+				($returnOnlyAllowedFields && in_array($publicName, $returnOnlyAllowedFields))) {
+				$metadata[$publicName] = array('type' => $data->type['name'], 'databaseName' => $fieldName);
+			}
 		}
 		return $metadata;
 	}

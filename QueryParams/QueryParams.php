@@ -63,4 +63,28 @@ class QueryParams {
 			}
 		}
 	}
+
+	public function getOrder() {
+		$filters = $this->query->get('order', '');
+		if (!empty($filters)) {
+			try {
+				$op = new OrderParser();
+				$filters = $op->parse($filters);
+			} catch (SyntaxErrorException $e) {
+				throw new BadRequestException('Invalid filter definition. '.$e->getMessage(), null, $e);
+			}
+		} else {
+			return null;
+		}
+		return $filters;
+	}
+
+	public function processOrderFields($allowedFilterFields, &$orderDefinition) {
+		foreach ($orderDefinition as &$order) {
+			if (!array_key_exists($order['field'], $allowedFilterFields)) {
+				throw new BadRequestException('Field "'.$order['field'].'" is not allowed in order definition');
+			}
+			$order['field'] = $allowedFilterFields[$order['field']]['databaseName'];
+		}
+	}
 }

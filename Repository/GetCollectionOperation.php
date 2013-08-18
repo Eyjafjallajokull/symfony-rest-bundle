@@ -14,8 +14,11 @@ class GetCollectionOperation extends AbstractOperation {
 	protected $offset;
 	/** @var array */
 	protected $filters;
-	private $params = array();
-	private $criteria;
+	/** @var array */
+	protected $order;
+	/** @var array */
+	protected $params = array();
+	protected $criteria;
 
 	/**
 	 * @param int $limit
@@ -43,12 +46,26 @@ class GetCollectionOperation extends AbstractOperation {
 		return $this;
 	}
 
+	/**
+	 * @param array $order
+	 */
+	public function setOrder($order) {
+		$this->order = $order;
+		return $this;
+	}
+
 	public function execute() {
 		$baseQueryBuilder = $this->repositoryWrapper->getBaseQuery();
 
 		$this->criteria = $this->compileFilters($baseQueryBuilder, $this->filters);
 		if ($this->criteria) {
 			$baseQueryBuilder->andWhere($this->criteria);
+		}
+
+		if ($this->order) {
+			foreach ($this->order as $order) {
+				$baseQueryBuilder->addOrderBy('c.' . $order['field'], $order['direction']);
+			}
 		}
 
 		// fetch results

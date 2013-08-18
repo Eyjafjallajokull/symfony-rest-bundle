@@ -189,25 +189,25 @@ class RestRepositoryController extends RestController {
 		$limit = $this->getQuery()->getLimit($this->container->getParameter('eyja_rest.default_limit'));
 		$offset = $this->getQuery()->getOffset();
 		$filters = $this->getQuery()->getFilters();
+		$order = $this->getQuery()->getOrder();
 
-		// validate filter fields
-		if ($filters) {
+		// validate and order filter fields
+		if ($filters || $order) {
 			$metadata = $this->get('eyja_rest.metadata');
-			$fieldsMetadata = $metadata->getFields($this->getRepository()->getClassName());
 			$allowedFilterFields = $this->getAllowedFilterFields();
-			if ($allowedFilterFields === null) {
-				$allowedFilterFields = $fieldsMetadata;
-			} else {
-				$allowedFilterFields = array_flip($allowedFilterFields);
-				$allowedFilterFields = array_intersect_key($fieldsMetadata, $allowedFilterFields);
+			$allowedFilterFields = $metadata->getFields($this->getRepository()->getClassName(), $allowedFilterFields);
+			if ($filters) {
+				$this->getQuery()->processFilterFields($allowedFilterFields, $filters);
 			}
-			$this->getQuery()->processFilterFields($allowedFilterFields, $filters);
+			if ($order) {
+				$this->getQuery()->processOrderFields($allowedFilterFields, $order);
+			}
 		}
 
 		// create repository operation
 		/** @var GetCollectionOperation $operation */
 		$operation = $this->getRepositoryWrapper()->getOperation('getCollection')
-			->setLimit($limit)->setOffset($offset)->setFilters($filters);
+			->setLimit($limit)->setOffset($offset)->setFilters($filters)->setOrder($order);
 		$results = $operation->execute();
 		$total = $operation->getCollectionTotal();
 

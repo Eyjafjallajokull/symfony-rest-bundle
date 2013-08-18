@@ -31,7 +31,7 @@ acme_rest:
     type: rest
 ```
 
-Create doctrine entitiy:
+Create new doctrine entitiy:
 
 ```
 php app/console generate:doctrine:entity \
@@ -40,16 +40,18 @@ php app/console generate:doctrine:entity \
 php app/console doctrine:schema:update --force
 ```
 
-Define validation for entity:
+Define serialization for this entity:
 
 ```yml
-# src/Acme/RestBundle/Resources/config/validation.yml
+# src/Acme/RestBundle/Resources/serializer/Entity.Cat.yml
 Acme\RestBundle\Entity\Cat:
     properties:
         id:
-            - NotBlank: {groups: [update]}
+            type: integer
+            groups: [collection, single]
         name:
-            - NotBlank: {groups: [update, create]}
+            type: string
+            groups: [collection, single]
 ```
 
 Create simplest controller ever, no class required just service:
@@ -94,6 +96,7 @@ curl -XDELETE http://localhost/app_dev.php/cat/1
 To see more complex example see [demo bundle](https://github.com/Eyjafjallajokull/symfony-rest-demo-bundle), 
 featuring custom routes and advanced serialization.
 
-## Generated API
+## Documentation
 
-Read more about auto generated API in [documentation](https://github.com/Eyjafjallajokull/symfony-rest-bundle/wiki/Generated-API).
+1. [Generated API](https://github.com/Eyjafjallajokull/symfony-rest-bundle/wiki/Generated-API).
+1. [Creating rest controller](https://github.com/Eyjafjallajokull/symfony-rest-bundle/wiki/Controller).

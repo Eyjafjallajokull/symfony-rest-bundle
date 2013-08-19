@@ -75,13 +75,15 @@ rest_cat_create                   POST   ANY    ANY  /api/v1/cat
 rest_cat_update                   PUT    ANY    ANY  /api/v1/cat/{id}
 rest_cat_delete                   DELETE ANY    ANY  /api/v1/cat/{id}
 
-curl -XPOST http://localhost/app_dev.php/cat -HContent-Type:\ application/json -d'{"name":"Lucifer"}'
+curl -XPOST http://localhost/app_dev.php/cat -HContent-Type:\ application/json \
+    -d'{"name":"Lucifer"}'
 {"id":1,"name":"Lucifer"}
 
 curl -XGET http://localhost/app_dev.php/cat/1
 {"id":1,"name":"Lucifer"}
 
-curl -XPUT http://localhost/app_dev.php/cat/1 -HContent-Type:\ application/json -d'{"name":"Lucifer -.-"}'
+curl -XPUT http://localhost/app_dev.php/cat/1 -HContent-Type:\ application/json \
+    -d'{"name":"Lucifer -.-"}'
 {"id":1,"name":"Lucifer -.-"}
 
 curl -XGET http://localhost/app_dev.php/cat

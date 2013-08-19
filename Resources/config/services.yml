@@ -1,5 +1,5 @@
 parameters:
-    eyja_rest.default_limit: 200
+    eyja_rest.default_limit: 25
 
 services:
     eyja_rest.listener.view:

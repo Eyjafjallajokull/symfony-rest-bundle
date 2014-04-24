@@ -106,7 +106,9 @@ class Serializer {
 	 */
 	public function deserialize(Request $request, $objectClass) {
 		$contentType = $request->headers->get('content-type');
-		$contentType = substr($contentType, 0, strpos($contentType, ";"));
+		if (strpos($contentType, ";") !== false) {
+			$contentType = substr($contentType, 0, strpos($contentType, ";"));
+		}
 
 		if ($this->isDeserializationTypeSupported($contentType)) {
 			$type = $this->supportedDeserializationTypes[$contentType];

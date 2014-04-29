@@ -19,7 +19,7 @@ class FilterParser extends AbstractParser {
 
 	public static $regExps = array(
 		self::T_OPERATOR_JOIN => '(and|or)',
-		self::T_OPERATOR => '(eq|ne|gt|lt|ge|le)',
+		self::T_OPERATOR => '(eq|ne|gt|lt|ge|le|like)',
 		self::T_PROPERTY => '([a-z]+)',
 		self::T_VALUE => '(-?\d+(?:\.\d+)?|\'[^\']*\')',
 	);
@@ -57,7 +57,6 @@ class FilterParser extends AbstractParser {
 			$result = $this->parseExpression();
 			$children[] = $result;
 		}
-
 		$nextOperator = $previousExpression = null;
 		while ($this->lexer->isNext(self::T_OPERATOR_JOIN)) {
 			$nextOperator = $this->match(self::T_OPERATOR_JOIN);

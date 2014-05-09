@@ -20,7 +20,7 @@ class QueryParams {
 	public function getOffset() {
 		$value = $this->query->getInt('offset', 0);
 		if ($value < 0 || $value > 200) {
-			throw new BadRequestException('Invalid value for limit parameter');
+			throw new BadRequestException('Invalid value for offset parameter');
 		}
 		return $value;
 	}
@@ -28,7 +28,7 @@ class QueryParams {
 	public function getLimit($defaultLimit = 25) {
 		$value = $this->query->getInt('limit', $defaultLimit);
 		if ($value < 0) {
-			throw new BadRequestException('Invalid value for offset parameter');
+			throw new BadRequestException('Invalid value for limit parameter');
 		}
 		return $value;
 	}

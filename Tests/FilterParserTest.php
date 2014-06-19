@@ -31,7 +31,7 @@ class FilterParserTest extends \PHPUnit_Framework_TestCase {
 
 	public function simpleExpressionDataProvider() {
 		$simple = array();
-		foreach (array('lt', 'gt', 'ge', 'le', 'eq', 'ne') as $operator) {
+		foreach (array('lt', 'gt', 'ge', 'le', 'eq', 'ne', 'like') as $operator) {
 			$simple[] = array("id $operator 10", $this->cExpr('id', $operator, 10));
 		}
 		$simple[] = array("name eq 'string'", $this->cExpr('name', 'eq', 'string'));

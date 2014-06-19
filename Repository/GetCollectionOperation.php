@@ -130,7 +130,7 @@ class GetCollectionOperation extends AbstractOperation {
 				$operator = 'neq';
 				break;
 		}
-		if (!in_array($operator, array('lte','gte','neq','eq','lt','gt'))) {
+		if (!in_array($operator, array('lte','gte','neq','eq','lt','gt','like'))) {
 			throw new BadRequestException('Invalid comparison operator '.$operator);
 		}
 		$criteria = $qb->expr()->$operator('c.' . $comparison['field'], '?' . count($this->params));
